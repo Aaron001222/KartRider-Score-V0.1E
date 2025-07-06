@@ -58,7 +58,7 @@ class CustomCombobox(ttk.Combobox):
 class ScoreSystem(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("KartRider Score v0.1c (好熊寶製作)")
+        self.title("KartRider Score v0.1d (好熊寶製作)")
         if hasattr(sys, "_MEIPASS"):
             # PyInstaller 執行時的臨時資料夾
             icon_path = os.path.join(sys._MEIPASS, "NL.ico")
@@ -135,8 +135,8 @@ class ScoreSystem(tk.Tk):
         header_row = tk.Frame(player_frame, bg=DARK_BG)
         header_row.grid(row=0, column=0, sticky="ew", pady=(0,2))
         tk.Label(header_row, text="", bg=DARK_BG, width=5).grid(row=0, column=0, padx=2, sticky="ew")
-        tk.Label(header_row, text="玩家名稱", bg=DARK_BG, fg=DARK_SUBTEXT, font=("Arial", 10, "bold"), width=10, anchor="w").grid(row=0, column=1, padx=2, sticky="ew")
-        tk.Label(header_row, text="顏色", bg=DARK_BG, fg=DARK_SUBTEXT, font=("Arial", 10, "bold"), width=12, anchor="w").grid(row=0, column=2, padx=2, sticky="ew")
+        tk.Label(header_row, text="顏色", bg=DARK_BG, fg=DARK_SUBTEXT, font=("Arial", 10, "bold"), width=12, anchor="w").grid(row=0, column=1, padx=2, sticky="ew")
+        tk.Label(header_row, text="玩家名稱", bg=DARK_BG, fg=DARK_SUBTEXT, font=("Arial", 10, "bold"), width=10, anchor="w").grid(row=0, column=2, padx=2, sticky="ew")
         tk.Label(header_row, text="本輪排名", bg=DARK_BG, fg=DARK_SUBTEXT, font=("Arial", 9, "bold"), width=8, anchor="center").grid(row=0, column=3, padx=2, sticky="ew")
         tk.Label(header_row, text="按鈕排名", bg=DARK_BG, fg=DARK_SUBTEXT, font=("Arial", 9, "bold"), width=8, anchor="center").grid(row=0, column=4, padx=2, sticky="ew")
         player_rows = []
@@ -151,18 +151,19 @@ class ScoreSystem(tk.Tk):
             self.color_vars.append(color_var)
             self.rank_vars.append(rank_var)
             tk.Label(rowf, text=f"玩家{i+1}", bg=DARK_BG, fg=DARK_TEXT, font=("Arial", 10), width=5).grid(row=0, column=0, padx=2, sticky="ew")
-            tk.Entry(rowf, textvariable=id_var, width=10, bg=DARK_ENTRY, fg=DARK_TEXT, insertbackground=DARK_TEXT, relief="groove", highlightbackground=DARK_BORDER).grid(row=0, column=1, padx=2, sticky="ew")
             # 顏色下拉+圓點同一格
             color_frame = tk.Frame(rowf, bg=DARK_BG)
             color_cb = CustomCombobox(color_frame, values=[name for name, _ in PLAYER_COLORS], textvariable=color_var, width=7, state="readonly")
             color_cb.pack(side="left", padx=(0,2))
             dot = ColorDot(color_frame, color=dict(PLAYER_COLORS)[color_var.get()])
             dot.pack(side="left", padx=(0,2))
-            color_frame.grid(row=0, column=2, padx=2, sticky="ew")
+            color_frame.grid(row=0, column=1, padx=2, sticky="ew")
             self.color_dots.append(dot)
             def update_dot(var=color_var, d=dot):
                 d.set_color(dict(PLAYER_COLORS)[var.get()])
             color_var.trace_add('write', lambda *args, var=color_var, d=dot: update_dot(var, d))
+            # 玩家名稱輸入框
+            tk.Entry(rowf, textvariable=id_var, width=10, bg=DARK_ENTRY, fg=DARK_TEXT, insertbackground=DARK_TEXT, relief="groove", highlightbackground=DARK_BORDER).grid(row=0, column=2, padx=2, sticky="ew")
             # 本輪排名（下拉選單）
             rank_cb = CustomCombobox(rowf, values=["X"] + [str(x+1) for x in range(8)], textvariable=rank_var, width=4, state="readonly")
             rank_cb.grid(row=0, column=3, padx=2, sticky="ew")

@@ -27,7 +27,7 @@
 
 ### 安裝步驟
 
-1. **克隆專案**
+1. **copy專案**
 ```bash
 git clone https://github.com/YOUR_USERNAME/kartrider-score-system.git
 cd kartrider-score-system
@@ -137,16 +137,6 @@ pyinstaller --noconsole --onefile --icon=NL.ico --add-data "NL.ico;." main.py
 - ✅ 分數曲線圖表
 - ✅ 深色主題設計
 
-## 🤝 貢獻指南
-
-歡迎提交 Issue 和 Pull Request！
-
-1. Fork 本專案
-2. 創建您的功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交您的更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 開啟一個 Pull Request
-
 ## 📄 授權條款
 
 本專案採用 MIT 授權條款 - 查看 [LICENSE](LICENSE) 檔案了解詳情。
@@ -162,7 +152,3 @@ pyinstaller --noconsole --onefile --icon=NL.ico --add-data "NL.ico;." main.py
 ## 🙏 致謝
 
 感謝所有使用者和測試者的寶貴意見與建議！
-
----
-
-⭐ 如果這個專案對您有幫助，請給我們一個 Star！ 

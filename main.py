@@ -10,6 +10,9 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.ticker import MaxNLocator
 from tkinter.simpledialog import askstring
+import PIL.ImageGrab
+import io
+import win32clipboard
 
 PLAYER_COLORS = [
     ("紅色", "#FF4C4C"),
@@ -58,7 +61,7 @@ class CustomCombobox(ttk.Combobox):
 class ScoreSystem(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("KartRider Score v0.1d (好熊寶製作)")
+        self.title("KartRider Score v0.1E (好熊寶製作)")
         if hasattr(sys, "_MEIPASS"):
             # PyInstaller 執行時的臨時資料夾
             icon_path = os.path.join(sys._MEIPASS, "NL.ico")
@@ -72,12 +75,14 @@ class ScoreSystem(tk.Tk):
         self.id_vars = []
         self.color_vars = []
         self.rank_vars = []
+        self.target_score_var = tk.IntVar(value=60)  # 新增：目標總分
+        # self.target_rank_vars = []  # 移除目標名次
         self.color_dots = []
         self.result_rows = []
         self.total_scores = [0]*8
         self.last_scores = [0]*8
         self.round_var = tk.IntVar(value=1)
-        self.max_round_var = tk.IntVar(value=8)  # 新增：總局數
+        self.max_round_var = tk.IntVar(value=35)  # 新增：總局數
         self.history = []  # 新增：分數歷史堆疊
         self.save_history()  # 只在這裡存一次
         self.rank_button_vars = [tk.IntVar(value=0) for _ in range(8)]  # 新增：按鈕式排名狀態
@@ -119,6 +124,10 @@ class ScoreSystem(tk.Tk):
         tk.Label(round_set_row, text="總局數:", bg=DARK_BG, fg=DARK_TEXT, font=("Arial", 10)).pack(side="left")
         max_round_entry = tk.Entry(round_set_row, textvariable=self.max_round_var, width=4, bg=DARK_ENTRY, fg=DARK_TEXT, insertbackground=DARK_TEXT, relief="groove", highlightbackground=DARK_BORDER)
         max_round_entry.pack(side="left", padx=2)
+        # 新增：目標總分設定
+        tk.Label(round_set_row, text="目標總分:", bg=DARK_BG, fg=DARK_TEXT, font=("Arial", 10)).pack(side="left", padx=(10,0))
+        target_score_entry = tk.Entry(round_set_row, textvariable=self.target_score_var, width=6, bg=DARK_ENTRY, fg=DARK_TEXT, insertbackground=DARK_TEXT, relief="groove", highlightbackground=DARK_BORDER)
+        target_score_entry.pack(side="left", padx=2)
         # 當前局數顯示加回外框
         round_label_frame = ttk.LabelFrame(left_frame, text="當前局數", style="TLabelframe")
         round_label_frame.pack(fill="x", pady=5)
@@ -233,6 +242,9 @@ class ScoreSystem(tk.Tk):
         self.result_frame = tk.Frame(right_frame, bg=DARK_BG, bd=0, highlightthickness=0)
         self.result_frame.grid(row=0, column=0, pady=60, sticky="n")  # 往下移動，置中
         self.draw_result_table()
+        # 新增：一鍵複製按鈕放在表格區域內
+        self.copy_btn = tk.Button(self.result_frame, text="一鍵複製", command=self.copy_result_table_image, bg=DARK_PANEL, fg=DARK_TEXT, font=("Arial", 10, "bold"), relief="groove", highlightbackground=DARK_BORDER)
+        self.copy_btn.grid(row=9, column=0, columnspan=4, sticky="e", pady=8, padx=8)
         right_frame.grid_rowconfigure(0, weight=1)
         right_frame.grid_columnconfigure(0, weight=1)
 
@@ -309,17 +321,31 @@ class ScoreSystem(tk.Tk):
                 "last": score
             })
         players.sort(key=lambda x: (-x["total"], x["rank"]))
+        # 取得目標分數與第一名分數
+        target_score = self.target_score_var.get()
+        first_score = self.score_define_vars[0].get() if self.score_define_vars else 0
         for i, p in enumerate(players):
             row = self.result_rows[i]
             row[0].config(text=str(i+1))
             row[1].set_color(p['color_code'])
-            row[2].config(text=p['id'])
-            row[3].config(text=str(p['total']))
+            row[2].config(text=p['id'], bg=DARK_PANEL, fg=DARK_TEXT)
+            # 根據分數狀態改變總分欄背景色與文字顏色
+            bg = DARK_PANEL
+            fg = DARK_TEXT
+            if target_score > 0 and first_score > 0:
+                if p['total'] >= target_score:
+                    bg = "#3CB371"  # 綠色
+                    fg = DARK_TEXT
+                elif target_score - p['total'] <= first_score:
+                    bg = "#FFD700"  # 黃色
+                    fg = "#222831"  # 黑色
+            row[3].config(text=str(p['total']), bg=bg, fg=fg)
             row[4].config(text=str(p['last']))
         self.round_var.set(self.round_var.get() + 1)
         self.save_history()  # 只在這裡存！
         self.update_round_label()  # 新增：每次計算後更新顯示
         self.clear_all_ranks()  # 新增：計算後自動清空排名
+        self.update_result_table()  # 新增：每次計算後刷新顏色提示
 
     def save_history(self):
         # 存目前所有分數、局數、last_scores
@@ -358,12 +384,22 @@ class ScoreSystem(tk.Tk):
                 "last": self.last_scores[i]
             })
         players.sort(key=lambda x: (-x["total"], x["rank"]))
+        # 取得目標分數與第一名分數
+        target_score = self.target_score_var.get()
+        first_score = self.score_define_vars[0].get() if self.score_define_vars else 0
         for i, p in enumerate(players):
             row = self.result_rows[i]
             row[0].config(text=str(i+1))
             row[1].set_color(p['color_code'])
-            row[2].config(text=p['id'])
-            row[3].config(text=str(p['total']))
+            row[2].config(text=p['id'], bg=DARK_PANEL, fg=DARK_TEXT)
+            # 根據分數狀態改變總分欄文字顏色（不改背景）
+            fg = DARK_TEXT
+            if target_score > 0 and first_score > 0:
+                if p['total'] >= target_score:
+                    fg = "#3CB371"  # 綠色
+                elif target_score - p['total'] <= first_score:
+                    fg = "#FFD700"  # 黃色
+            row[3].config(text=str(p['total']), bg=DARK_PANEL, fg=fg)
             row[4].config(text=str(p['last']))
 
     def show_history(self):
@@ -507,6 +543,30 @@ class ScoreSystem(tk.Tk):
             self.rank_button_vars[i].set(0)
             self.rank_vars[i].set("X")
         self.update_rank_buttons()
+
+    def copy_result_table_image(self):
+        # 取得 result_frame 在螢幕上的座標
+        self.result_frame.update()
+        # 截圖前先隱藏按鈕
+        self.copy_btn.grid_remove()
+        self.result_frame.update()
+        x = self.result_frame.winfo_rootx()
+        y = self.result_frame.winfo_rooty()
+        w = self.result_frame.winfo_width()
+        h = self.result_frame.winfo_height()
+        bbox = (x, y, x + w, y + h)
+        img = PIL.ImageGrab.grab(bbox)
+        # 截圖後再顯示按鈕
+        self.copy_btn.grid(row=9, column=0, columnspan=4, sticky="e", pady=8, padx=8)
+        # 複製到剪貼簿（Windows 專用）
+        output = io.BytesIO()
+        img.convert('RGB').save(output, 'BMP')
+        data = output.getvalue()[14:]
+        output.close()
+        win32clipboard.OpenClipboard()
+        win32clipboard.EmptyClipboard()
+        win32clipboard.SetClipboardData(win32clipboard.CF_DIB, data)
+        win32clipboard.CloseClipboard()
 
 if __name__ == "__main__":
     app = ScoreSystem()

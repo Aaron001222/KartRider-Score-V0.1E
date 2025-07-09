@@ -88,6 +88,12 @@ class ScoreSystem(tk.Tk):
         self.rank_button_vars = [tk.IntVar(value=0) for _ in range(8)]  # 新增：按鈕式排名狀態
         self.rank_button_widgets = []  # 新增：存放按鈕元件
         self.setup_ui()
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
+
+    def on_close(self):
+        self.destroy()
+        import sys
+        sys.exit(0)
 
     def setup_ui(self):
         style = ttk.Style(self)

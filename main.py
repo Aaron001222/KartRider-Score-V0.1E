@@ -4,6 +4,12 @@ import matplotlib
 import warnings
 import os
 import sys
+# 新增：高 DPI 支援
+import ctypes
+try:
+    ctypes.windll.shcore.SetProcessDpiAwareness(1)
+except Exception:
+    pass
 warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
@@ -551,15 +557,16 @@ class ScoreSystem(tk.Tk):
         self.update_rank_buttons()
 
     def copy_result_table_image(self):
-        # 取得 result_frame 在螢幕上的座標
+        self.result_frame.update_idletasks()
         self.result_frame.update()
         # 截圖前先隱藏按鈕
         self.copy_btn.grid_remove()
+        self.result_frame.update_idletasks()
         self.result_frame.update()
         x = self.result_frame.winfo_rootx()
         y = self.result_frame.winfo_rooty()
-        w = self.result_frame.winfo_width()
-        h = self.result_frame.winfo_height()
+        w = self.result_frame.winfo_width() + 4  # 微調寬度
+        h = self.result_frame.winfo_height() + 4  # 微調高度
         bbox = (x, y, x + w, y + h)
         img = PIL.ImageGrab.grab(bbox)
         # 截圖後再顯示按鈕

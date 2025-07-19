@@ -1,0 +1,11 @@
+# requirements.txt 
+
+# 跑跑卡丁車計分系統依賴套件
+# 基礎 GUI 框架（Python 內建，不需要安裝）
+# tkinter
+
+# 圖表繪製
+matplotlib>=3.5.0
+
+# 打包工具（可選）
+# pyinstaller>=5.0.0 

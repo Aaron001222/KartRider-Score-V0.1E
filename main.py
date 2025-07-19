@@ -287,6 +287,7 @@ class ScoreSystem(tk.Tk):
             self.score_define_vars.append(var)
             tk.Label(score_row, text=f"第{i+1}名", bg=DARK_BG, fg=DARK_TEXT, font=("Arial", 10)).pack(side="left", padx=2)
             tk.Entry(score_row, textvariable=var, width=4, bg=DARK_ENTRY, fg=DARK_TEXT, insertbackground=DARK_TEXT, relief="groove", highlightbackground=DARK_BORDER).pack(side="left", padx=2)
+        # 新增未完成(X)欄位
         var = tk.IntVar(value=DEFAULT_SCORES[8])
         self.score_define_vars.append(var)
         tk.Label(score_row, text="未完成", bg=DARK_BG, fg=DARK_TEXT, font=("Arial", 10)).pack(side="left", padx=2)
@@ -303,7 +304,6 @@ class ScoreSystem(tk.Tk):
         # 新增：一鍵複製按鈕放在表格區域內
         self.copy_btn = tk.Button(self.result_frame, text="一鍵複製", command=self.copy_result_table_image, bg=DARK_PANEL, fg=DARK_TEXT, font=("Arial", 10, "bold"), relief="groove", highlightbackground=DARK_BORDER)
         self.copy_btn.grid(row=9, column=0, columnspan=4, sticky="e", pady=8, padx=8)
-        
         # 隊伍計分顯示區域（紅框部分）
         self.team_result_frame = tk.Frame(right_frame, bg=DARK_BG, bd=2, relief="groove", highlightthickness=1, highlightbackground="red")
         self.team_result_frame.grid(row=1, column=0, pady=(20,10), sticky="ew")  # 調整上方間距為20
@@ -438,6 +438,7 @@ class ScoreSystem(tk.Tk):
             row[3].config(text=str(p['total']), bg=bg, fg=fg)
             row[4].config(text=str(p['last']))
         self.round_var.set(self.round_var.get() + 1)
+        self.save_history()  # 只在這裡存！
         self.update_round_label()  # 新增：每次計算後更新顯示
         self.clear_all_ranks()  # 新增：計算後自動清空排名
         self.update_result_table()  # 新增：每次計算後刷新顏色提示
